@@ -1,4 +1,4 @@
-## Description
+# Description
 
 This project repository provides a comprehensive automated installation and configuration script for Intel hardware acceleration. The primary utility is to orchestrate the setup of OpenVINO Runtime 2026 along with necessary Intellectual Property Compute runtime drivers (NEO). This script establishes the required dependencies, system libraries, and GPU access layers essential for `llama.cpp` leveraging Intel GPUs.
 
