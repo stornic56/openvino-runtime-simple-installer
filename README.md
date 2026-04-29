@@ -1,6 +1,6 @@
 # Description
 
-This project repository provides a comprehensive automated installation and configuration script for Intel hardware acceleration. The primary utility is to orchestrate the setup of OpenVINO Runtime 2026 along with necessary Intellectual Property Compute runtime drivers (NEO). This script establishes the required dependencies, system libraries, and GPU access layers essential for `llama.cpp` leveraging Intel GPUs.
+This project repository provides a comprehensive automated installation and configuration script for Intel hardware acceleration. The primary utility is to orchestrate the setup of OpenVINO Runtime 2026 along with necessary Intel Compute Runtime drivers (NEO). This script establishes the required dependencies, system libraries, and GPU access layers essential for `llama.cpp` leveraging Intel GPUs.
 
 ## Supported Operating Systems
 
@@ -37,7 +37,7 @@ sudo ./main.sh
 The execution of `main.sh` automatically handles OS detection and conditionally installs components based on hardware presence, ensuring a fully configured inference pipeline:
 
 **Core Runtime & Libraries:**
-*   **OpenVINO Toolkit 2026.0:** The complete runtime package is downloaded from the official OpenVINO repository (`https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.0/linux`) and installed under `/opt/intel/openvino_2026`. It is the same version used within llama.cpp.
+*   **OpenVINO Toolkit 2026.0:** The complete runtime package is downloaded from the official OpenVINO repository (`https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.0/linux`) and installed under `/opt/intel/openvino_2026`. It is the same version used in llama.cpp in its builds.
 *   **System Dependencies:** Required libraries, including `cmake`, Python 3 (with version-specific dependencies like `libpython3.13` for Debian 13 or `libpython3.13` for Ubuntu 26.04), GCC compilers (`g++`), NumPy bindings, and standard development tools are installed via system package managers (`apt`/`dnf`).
 
 **Hardware Acceleration & Drivers (NEO):**
@@ -68,6 +68,6 @@ vainfo
 ```
 ## Note:
 Users should reference the following official projects:
-- Llamacpp: [Official Repository Link](https://github.com/ggml-org/llama.cpp) [OpenvinoBackend](https://github.com/ggml-org/llama.cpp/blob/master/docs/backend/OPENVINO.md)
+- Llamacpp: [Official Repository Link](https://github.com/ggml-org/llama.cpp) and [OpenvinoBackend](https://github.com/ggml-org/llama.cpp/blob/master/docs/backend/OPENVINO.md)
 - OpenVino Toolkit: [Official Website/Repository Link](https://docs.openvino.ai/2026/get-started/install-openvino/install-openvino-archive-linux.html)
 - Intel NEO Drivers: [Intel Compute Runtime](https://github.com/intel/compute-runtime))
