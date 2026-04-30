@@ -69,5 +69,5 @@ vainfo
 ## Note:
 Users should reference the following official projects:
 - Llamacpp: [Official Repository Link](https://github.com/ggml-org/llama.cpp) and [OpenvinoBackend](https://github.com/ggml-org/llama.cpp/blob/master/docs/backend/OPENVINO.md)
-- OpenVino Toolkit: [Docs](https://docs.openvino.ai/2026/get-started/install-openvino/install-openvino-archive-linux.html) and [github](https://github.com/openvinotoolkit/openvino))
+- OpenVino Toolkit: [Docs](https://docs.openvino.ai/2026/get-started/install-openvino/install-openvino-archive-linux.html) and [github](https://github.com/openvinotoolkit/openvino)
 - Intel NEO Drivers: [Intel Compute Runtime](https://github.com/intel/compute-runtime)
