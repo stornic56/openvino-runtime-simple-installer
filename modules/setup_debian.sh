@@ -44,12 +44,12 @@ cd "$TEMP_DIR"
 
 # Hashes SHA256
 declare -A NEO_HASHES=(
-    ["intel-igc-core-2_2.30.1+20950_amd64.deb"]="0a3114a6f74bf6382d5976633c262ff4c392273828424fce04c7185071f8b2ca"
-    ["intel-igc-opencl-2_2.30.1+20950_amd64.deb"]="9b24a5778af3c4a6bd211a21e7b6860fde9c6869b29c7c4423b5b1a949db13fd"
-    ["intel-ocloc_26.09.37435.1-0_amd64.deb"]="893185ee9df9656f1350d701bffc240a7ec04021879e0b8ac645dd1db419cd9e"
-    ["intel-opencl-icd_26.09.37435.1-0_amd64.deb"]="611c758c169a81c91bfc0b089cb6a53949ec2b6aedbf892635a579c529c63e7a"
-    ["libigdgmm12_22.9.0_amd64.deb"]="9d712f71c18baee076de9961dda71e8089291e1bd0deb5d649ab5ba5de114f97"
-    ["libze-intel-gpu1_26.09.37435.1-0_amd64.deb"]="9fb35fbccbb5f85a60283803de961398ec8ae7d23bfd07f1f272307f596972c9"
+    ["intel-igc-core-2_2.34.4+21428_amd64.deb"]="1150de9f1b8c06aab0bf6e619a6c02ed4cd0c7b4135752ae74c82c8f8fb7acb2"
+    ["intel-igc-opencl-2_2.34.4+21428_amd64.deb"]="f36cb8a6899353c61cc7261b650f287f4a652acadaad859103bdfc51f93b6e8a"
+    ["intel-ocloc_26.18.38308.1-0_amd64.deb"]="74b98d91a92d59c487e4938175284e57d5a84ec35d9997a9d65fa4db3f51b96b"
+    ["intel-opencl-icd_26.18.38308.1-0_amd64.deb"]="b2d0c924e56b3f9e5837774d68b0c67461b8633035d93ca18b1a8e3e5ead15fa"
+    ["libigdgmm12_22.10.0_amd64.deb"]="6031a63d6e8a12ce61c14efc15f2c8e727061286e3820b8594e6d00615e04d54"
+    ["libze-intel-gpu1_26.18.38308.1-0_amd64.deb"]="12b8254e6d3415c32cee9cd13943030b991d91212445c79fe1cc27176a72eca4"
 )
 
 download_and_verify() {
@@ -64,26 +64,31 @@ download_and_verify() {
     fi
 }
 
-download_and_verify "https://github.com/intel/intel-graphics-compiler/releases/download/v2.30.1/intel-igc-core-2_2.30.1+20950_amd64.deb" \
-    "intel-igc-core-2_2.30.1+20950_amd64.deb" "${NEO_HASHES["intel-igc-core-2_2.30.1+20950_amd64.deb"]}"
-download_and_verify "https://github.com/intel/intel-graphics-compiler/releases/download/v2.30.1/intel-igc-opencl-2_2.30.1+20950_amd64.deb" \
-    "intel-igc-opencl-2_2.30.1+20950_amd64.deb" "${NEO_HASHES["intel-igc-opencl-2_2.30.1+20950_amd64.deb"]}"
-download_and_verify "https://github.com/intel/compute-runtime/releases/download/26.09.37435.1/intel-ocloc_26.09.37435.1-0_amd64.deb" \
-    "intel-ocloc_26.09.37435.1-0_amd64.deb" "${NEO_HASHES["intel-ocloc_26.09.37435.1-0_amd64.deb"]}"
-download_and_verify "https://github.com/intel/compute-runtime/releases/download/26.09.37435.1/intel-opencl-icd_26.09.37435.1-0_amd64.deb" \
-    "intel-opencl-icd_26.09.37435.1-0_amd64.deb" "${NEO_HASHES["intel-opencl-icd_26.09.37435.1-0_amd64.deb"]}"
-download_and_verify "https://github.com/intel/compute-runtime/releases/download/26.09.37435.1/libigdgmm12_22.9.0_amd64.deb" \
-    "libigdgmm12_22.9.0_amd64.deb" "${NEO_HASHES["libigdgmm12_22.9.0_amd64.deb"]}"
-download_and_verify "https://github.com/intel/compute-runtime/releases/download/26.09.37435.1/libze-intel-gpu1_26.09.37435.1-0_amd64.deb" \
-    "libze-intel-gpu1_26.09.37435.1-0_amd64.deb" "${NEO_HASHES["libze-intel-gpu1_26.09.37435.1-0_amd64.deb"]}"
+download_and_verify "https://github.com/intel/intel-graphics-compiler/releases/download/v2.34.4/intel-igc-core-2_2.34.4+21428_amd64.deb" \
+    "intel-igc-core-2_2.34.4+21428_amd64.deb" "${NEO_HASHES["intel-igc-core-2_2.34.4+21428_amd64.deb"]}"
+download_and_verify "https://github.com/intel/intel-graphics-compiler/releases/download/v2.34.4/intel-igc-opencl-2_2.34.4+21428_amd64.deb" \
+    "intel-igc-opencl-2_2.34.4+21428_amd64.deb" "${NEO_HASHES["intel-igc-opencl-2_2.34.4+21428_amd64.deb"]}"
+download_and_verify "https://github.com/intel/compute-runtime/releases/download/26.18.38308.1/intel-ocloc_26.18.38308.1-0_amd64.deb" \
+    "intel-ocloc_26.18.38308.1-0_amd64.deb" "${NEO_HASHES["intel-ocloc_26.18.38308.1-0_amd64.deb"]}"
+download_and_verify "https://github.com/intel/compute-runtime/releases/download/26.18.38308.1/intel-opencl-icd_26.18.38308.1-0_amd64.deb" \
+    "intel-opencl-icd_26.18.38308.1-0_amd64.deb" "${NEO_HASHES["intel-opencl-icd_26.18.38308.1-0_amd64.deb"]}"
+download_and_verify "https://github.com/intel/compute-runtime/releases/download/26.18.38308.1/libigdgmm12_22.10.0_amd64.deb" \
+    "libigdgmm12_22.10.0_amd64.deb" "${NEO_HASHES["libigdgmm12_22.10.0_amd64.deb"]}"
+download_and_verify "https://github.com/intel/compute-runtime/releases/download/26.18.38308.1/libze-intel-gpu1_26.18.38308.1-0_amd64.deb" \
+    "libze-intel-gpu1_26.18.38308.1-0_amd64.deb" "${NEO_HASHES["libze-intel-gpu1_26.18.38308.1-0_amd64.deb"]}"
 
 print_substep "Instalando paquetes deb..."
-dpkg -i libigdgmm12_22.9.0_amd64.deb
-dpkg -i intel-igc-core-2_2.30.1+20950_amd64.deb
-dpkg -i intel-igc-opencl-2_2.30.1+20950_amd64.deb
-dpkg -i intel-ocloc_26.09.37435.1-0_amd64.deb
-dpkg -i libze-intel-gpu1_26.09.37435.1-0_amd64.deb
-dpkg -i intel-opencl-icd_26.09.37435.1-0_amd64.deb
+dpkg -i libigdgmm12_22.10.0_amd64.deb
+
+dpkg -i intel-igc-core-2_2.34.4+21428_amd64.deb
+
+dpkg -i intel-igc-opencl-2_2.34.4+21428_amd64.deb
+
+dpkg -i intel-ocloc_26.18.38308.1-0_amd64.deb
+
+dpkg -i libze-intel-gpu1_26.18.38308.1-0_amd64.deb
+
+dpkg -i intel-opencl-icd_26.18.38308.1-0_amd64.deb
 apt-get install -f -y
 
 cd /
