@@ -45,26 +45,27 @@ print_substep "System detected: $OS_ID $VERSION_ID"
 
 # Prefix mapping
 case "$OS_ID" in
-    debian)
-        PREFIX="ubuntu24"   # Tested and working on Debian 13
-        ;;
-    ubuntu)
-        case "$VERSION_ID" in
-            22.04) PREFIX="ubuntu22" ;;
-            24.04|26.04) PREFIX="ubuntu24" ;;
-            *)
-                print_error "Unsupported Ubuntu version: $VERSION_ID"
-                exit 1
-                ;;
-        esac
-        ;;
-    fedora)
-        PREFIX="rhel8"
-        ;;
+debian)
+    PREFIX="ubuntu24" # Tested and working on Debian 13
+    ;;
+ubuntu)
+    case "$VERSION_ID" in
+    22.04) PREFIX="ubuntu22" ;;
+    24.04) PREFIX="ubuntu24" ;;
+    26.04) PREFIX="ubuntu26" ;;
     *)
-        print_error "Unsupported distribution: $OS_ID"
+        print_error "Unsupported Ubuntu version: $VERSION_ID"
         exit 1
         ;;
+    esac
+    ;;
+fedora)
+    PREFIX="rhel8"
+    ;;
+*)
+    print_error "Unsupported distribution: $OS_ID"
+    exit 1
+    ;;
 esac
 
 # ------------------------------------------------------------------------------
@@ -72,38 +73,43 @@ esac
 # ------------------------------------------------------------------------------
 print_step "2. Detecting Intel GPU..."
 
-if GPU_LINE=$(lspci -nn | grep -i "vga\|3d\|display" | grep -i "intel" | head -1); then
+LSPCI_INTEL=$(lspci -nn 2>/dev/null | grep -i "vga\|3d\|display" | grep -i "intel" || true) # lspci missing -> empty -> prompt (documented degradation)
+GPU_LINE="${LSPCI_INTEL%%$'\n'*}"
+if [ -n "$GPU_LINE" ]; then
     GPU_NAME=$(echo "$GPU_LINE" | awk -F': ' '{print $2}')
     print_substep "Intel GPU detected: $GPU_NAME"
     GPU_PRESENT=true
 else
     print_warning "No Intel GPU was detected."
     GPU_PRESENT=false
-    read -p "Do you want to continue the installation WITHOUT GPU support? [y/n]: " response
+    read -r -p "Do you want to continue the installation WITHOUT GPU support? [y/n]: " response || {
+        print_error "No interactive input available (stdin closed). Installation cancelled."
+        exit 1
+    }
     case "$response" in
-        [yY]*) ;;
-        *)
-            print_error "Installation cancelled by the user."
-            exit 0
-            ;;
+    [yY]*) ;;
+    *)
+        print_error "Installation cancelled by the user."
+        exit 0
+        ;;
     esac
 fi
 
 # ------------------------------------------------------------------------------
 # 3. Install NEO (only if there is a GPU)
 # ------------------------------------------------------------------------------
-if $GPU_PRESENT; then
+if [ "$GPU_PRESENT" = true ]; then
     print_step "3. Installing GPU drivers (Intel Compute Runtime NEO)..."
     case "$OS_ID" in
-        debian)
-            bash "$MODULES_DIR/setup_debian.sh"
-            ;;
-        ubuntu)
-            bash "$MODULES_DIR/setup_ubuntu.sh"
-            ;;
-        fedora)
-            bash "$MODULES_DIR/setup_fedora.sh"
-            ;;
+    debian)
+        bash "$MODULES_DIR/setup_debian.sh"
+        ;;
+    ubuntu)
+        bash "$MODULES_DIR/setup_ubuntu.sh"
+        ;;
+    fedora)
+        bash "$MODULES_DIR/setup_fedora.sh"
+        ;;
     esac
 else
     print_step "3. Skipping NEO driver installation (no Intel GPU)."
@@ -113,8 +119,8 @@ fi
 # 4. Download OpenVINO Runtime
 # ------------------------------------------------------------------------------
 print_step "4. Downloading OpenVINO Runtime package..."
-BASE_URL="https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.0/linux"
-VERSION="2026.0.0.20965.c6d6a13a886"
+BASE_URL="https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.3.1/linux"
+VERSION="2026.3.1.22476.56d9685302d"
 FILENAME="openvino_toolkit_${PREFIX}_${VERSION}_x86_64.tgz"
 URL="$BASE_URL/$FILENAME"
 
@@ -143,8 +149,8 @@ bash "$CORE_DIR/openvino_logic.sh" --install "$FILENAME"
 print_step "Installation completed successfully!"
 
 # installed version
-if [ -f "/opt/intel/openvino_2026.0/runtime/version.txt" ]; then
-    echo "Version: $(cat /opt/intel/openvino_2026.0/runtime/version.txt)"
+if [ -f "/opt/intel/openvino_2026/runtime/version.txt" ]; then
+    echo "Version: $(cat /opt/intel/openvino_2026/runtime/version.txt)"
 else
     echo "Version: could not be determined"
 fi
@@ -155,7 +161,7 @@ echo "  source /opt/intel/openvino_2026/setupvars.sh"
 echo ""
 echo "----------------------------------------------------------------------"
 
-if $GPU_PRESENT; then
+if [ "$GPU_PRESENT" = true ]; then
     echo "IMPORTANT NOTES:"
     echo "1. Restart your session (or system) for the group changes (render, video) to take effect and for you to be able to use the GPU."
     echo "2. Check the OpenCL status with: clinfo"
