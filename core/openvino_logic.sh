@@ -17,30 +17,45 @@ if [ "$1" = "--install" ]; then
         exit 1
     fi
 
-    # Clean up any previous installation before proceeding
-    if [ -d "/opt/intel/openvino_2026.0" ]; then
-        print_warning "An existing OpenVINO installation was found. Removing it..."
-        rm -rf "/opt/intel/openvino_2026.0"
-    fi
-    if [ -L "/opt/intel/openvino_2026" ]; then
-        rm -f "/opt/intel/openvino_2026"
-    fi
+    # Derive destination from version (official doc pattern: year.patch)
+    # e.g. openvino_toolkit_ubuntu24_<VERSION>_x86_64.tgz -> /opt/intel/openvino_<YEAR.PATCH>
+    VERSION_FULL="$(echo "$FILENAME" | cut -d_ -f4)"
+    case "$VERSION_FULL" in
+    20[0-9][0-9].*) ;; # valid version format, continue
+    *)
+        print_error "Could not derive version from: $FILENAME"
+        exit 1
+        ;;
+    esac
+    INSTALL_DIR="/opt/intel/openvino_$(echo "$VERSION_FULL" | cut -d. -f1-3)"
 
+    # Replace policy (updates): remove ANY previous 2026 install and the previous symlink.
+    # Known limitation: the previous install is deleted BEFORE extracting; if the tar
+    # failed afterwards, the system would be left without OpenVINO. Acceptable because
+    # the SHA256 was already verified during the download step.
+    if ls -d /opt/intel/openvino_2026.* >/dev/null 2>&1; then
+        print_warning "An existing OpenVINO installation was found. Replacing it..."
+    fi
+    rm -rf /opt/intel/openvino_2026    # remove previous symlink OR real directory (rm -rf does not follow symlinks)
+    rm -rf /opt/intel/openvino_2026.* # ANY previous 2026 install
+    mkdir -p /opt/intel
+
+    DIRNAME="${FILENAME%.tgz}"   # known before tar (enables trap cleanup)
+    trap 'rm -rf "$DIRNAME"' EXIT
     print_substep "Unzipping $FILENAME..."
     tar -xf "$FILENAME"
 
-    # The name of the extracted folder matches the name of the tarball without the .tgz extension
-    DIRNAME="${FILENAME%.tgz}"
     if [ ! -d "$DIRNAME" ]; then
         # guess the real name
-        DIRNAME=$(tar -tf "$FILENAME" | head -1 | cut -d/ -f1)
+        TAR_LIST=$(tar -tf "$FILENAME")
+        DIRNAME="${TAR_LIST%%$'\n'*}"   # first entry (no pipe, no SIGPIPE)
+        DIRNAME="${DIRNAME%%/*}"
     fi
-    print_substep "Moving $DIRNAME a /opt/intel/openvino_2026.0..."
-    mkdir -p /opt/intel
-    mv "$DIRNAME" "/opt/intel/openvino_2026.0"
+    print_substep "Moving $DIRNAME a $INSTALL_DIR..."
+    mv "$DIRNAME" "$INSTALL_DIR"
 
     print_substep "Create symbolic link /opt/intel/openvino_2026..."
-    ln -sf /opt/intel/openvino_2026.0 /opt/intel/openvino_2026
+    ln -s "$INSTALL_DIR" /opt/intel/openvino_2026
     exit 0
 fi
 

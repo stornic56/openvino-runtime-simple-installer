@@ -23,6 +23,6 @@ print_substep "Adding user to render and video groups (if they exist)..."
 if [ -n "${SUDO_USER:-}" ]; then
     usermod -a -G render,video "$SUDO_USER"
 else
-    current_user=$(logname 2>/dev/null || echo "$USER")
+    current_user="${SUDO_USER:-$(logname 2>/dev/null || id -un)}"
     usermod -a -G render,video "$current_user"
 fi
