@@ -119,8 +119,8 @@ fi
 # 4. Download OpenVINO Runtime
 # ------------------------------------------------------------------------------
 print_step "4. Downloading OpenVINO Runtime package..."
-BASE_URL="https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.3.1/linux"
-VERSION="2026.3.1.22476.56d9685302d"
+BASE_URL="https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.4/linux"
+VERSION="2026.4.0.22959.99c81491cc3"
 FILENAME="openvino_toolkit_${PREFIX}_${VERSION}_x86_64.tgz"
 URL="$BASE_URL/$FILENAME"
 

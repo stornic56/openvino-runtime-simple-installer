@@ -43,14 +43,14 @@ The execution of `main.sh` automatically handles OS detection and conditionally 
 
 **Core Runtime & Libraries:**
 
-* **OpenVINO Toolkit 2026.3.1:** The complete runtime package is downloaded from the official OpenVINO repository (`https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.3.1/linux`) and installed under `/opt/intel/openvino_2026`. It is the same version used in llama.cpp in its builds.
+* **OpenVINO Toolkit 2026.4:** The complete runtime package is downloaded from the official OpenVINO repository (`https://storage.openvinotoolkit.org/repositories/openvino/packages/2026.4/linux`) and installed under `/opt/intel/openvino_2026`. It is the same version used in llama.cpp in its builds.
 * **System Dependencies:** Required libraries, including `cmake`, Python 3 (with version-specific dependencies like `libpython3.13` for Debian 13 or `libpython3.13` for Ubuntu 26.04), GCC compilers (`g++`), NumPy bindings, and standard development tools are installed via system package managers (`apt`/`dnf`).
 
 **Hardware Acceleration & Drivers (NEO):**
 
-* **Intel Compute Runtime NEO (26.31.39395.13):** If an Intel GPU is detected, the respective module script installs critical proprietary drivers:
-  * `intel-igc-core` (2.40.13): Graphics Compiler core components.
-  * `intel-igc-opencl` (2.40.13): OpenCL interface libraries for graphics compilation.
+* **Intel Compute Runtime NEO (26.35.39758.10):** If an Intel GPU is detected, the respective module script installs critical proprietary drivers:
+  * `intel-igc-core` (2.41.5): Graphics Compiler core components.
+  * `intel-igc-opencl` (2.41.5): OpenCL interface libraries for graphics compilation.
   * `intel-ocloc`/`libze-intel-gpu1`: Compute Runtime interfaces and GPU acceleration layers (OpenCL/oneAPI).
   * **Multimedia Support:** Installation of `mesa-va-drivers`, `vainfo`, and related packages to ensure Video Acceleration API support, crucial for media inference tasks.
 
