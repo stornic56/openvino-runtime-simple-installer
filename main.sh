@@ -18,7 +18,6 @@ fi
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CORE_DIR="$SCRIPT_DIR/core"
 MODULES_DIR="$SCRIPT_DIR/modules"
-DEPS_DIR="$SCRIPT_DIR/deps"
 
 # print
 source "$CORE_DIR/common.sh"
@@ -132,10 +131,19 @@ bash "$CORE_DIR/openvino_logic.sh" "$URL" "$FILENAME"
 print_step "5. Integrity verification completed."
 
 # ------------------------------------------------------------------------------
-# 6. Install system dependencies for OpenVINO
 # ------------------------------------------------------------------------------
-print_step "6. Installing system dependencies (Python, cmake, etc.)..."
-bash "$DEPS_DIR/install_openvino_dependencies.sh" -y
+# 6. Extract the tarball and install system dependencies from it (official flow)
+# ------------------------------------------------------------------------------
+print_step "6. Extracting tarball and installing system dependencies..."
+bash "$CORE_DIR/openvino_logic.sh" --extract "$FILENAME"
+
+DEPS_SCRIPT="${FILENAME%.tgz}/install_dependencies/install_openvino_dependencies.sh"
+if [ ! -f "$DEPS_SCRIPT" ]; then
+    print_error "Unexpected tarball layout: install_dependencies/ not found in the extracted folder."
+    exit 1
+fi
+print_substep "Installing system dependencies from the tarball..."
+bash "$DEPS_SCRIPT" -y
 
 # ------------------------------------------------------------------------------
 # 7. Install OpenVINO

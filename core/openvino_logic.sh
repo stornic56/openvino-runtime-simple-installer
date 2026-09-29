@@ -6,8 +6,31 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/common.sh"
 
 if [ $# -lt 2 ]; then
-    print_error "Usage: $0 <URL> <OUTPUT_FILE> | $0 --install <FILE>"
+    print_error "Usage: $0 <URL> <OUTPUT_FILE> | $0 --extract <FILE> | $0 --install <FILE>"
     exit 1
+fi
+
+if [ "$1" = "--extract" ]; then
+    FILENAME="$2"
+    if [ ! -f "$FILENAME" ]; then
+        print_error "   $FILENAME could not be found to extract."
+        exit 1
+    fi
+
+    # Known before tar (enables partial-extraction cleanup on abort)
+    DIRNAME="${FILENAME%.tgz}"
+    trap 'rm -rf "$DIRNAME"' EXIT
+
+    print_substep "Unzipping $FILENAME..."
+    tar -xf "$FILENAME"
+
+    # fallback if the extracted folder name differs from the tarball name
+    if [ ! -d "$DIRNAME" ]; then
+        TAR_LIST=$(tar -tf "$FILENAME")
+        DIRNAME="${TAR_LIST%%$'\n'*}"   # first entry (no pipe, no SIGPIPE)
+        DIRNAME="${DIRNAME%%/*}"
+    fi
+    exit 0
 fi
 
 if [ "$1" = "--install" ]; then
@@ -30,9 +53,9 @@ if [ "$1" = "--install" ]; then
     INSTALL_DIR="/opt/intel/openvino_$(echo "$VERSION_FULL" | cut -d. -f1-3)"
 
     # Replace policy (updates): remove ANY previous 2026 install and the previous symlink.
-    # Known limitation: the previous install is deleted BEFORE extracting; if the tar
-    # failed afterwards, the system would be left without OpenVINO. Acceptable because
-    # the SHA256 was already verified during the download step.
+    # Known limitation: the previous install is deleted BEFORE moving the new one; if the
+    # mv failed afterwards, the system would be left without OpenVINO. Acceptable because
+    # the extraction and its SHA256 verification already succeeded in the --extract step.
     if ls -d /opt/intel/openvino_2026.* >/dev/null 2>&1; then
         print_warning "An existing OpenVINO installation was found. Replacing it..."
     fi
@@ -40,10 +63,7 @@ if [ "$1" = "--install" ]; then
     rm -rf /opt/intel/openvino_2026.* # ANY previous 2026 install
     mkdir -p /opt/intel
 
-    DIRNAME="${FILENAME%.tgz}"   # known before tar (enables trap cleanup)
-    trap 'rm -rf "$DIRNAME"' EXIT
-    print_substep "Unzipping $FILENAME..."
-    tar -xf "$FILENAME"
+    DIRNAME="${FILENAME%.tgz}"
 
     if [ ! -d "$DIRNAME" ]; then
         # guess the real name
