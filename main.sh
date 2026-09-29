@@ -24,6 +24,28 @@ case "${1:-}" in
         ;;
 esac
 
+# Option parsing (before the root check: parsing needs no privileges)
+ASSUME_YES=false
+FORCE_NO_GPU=false
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --yes) ASSUME_YES=true ;;
+    --no-gpu) FORCE_NO_GPU=true ;;
+    --help | -h)
+        echo "Usage: sudo bash main.sh [--yes] [--no-gpu] [doctor]"
+        echo "  --yes      non-interactive: assume 'yes' at the GPU-absent prompt"
+        echo "  --no-gpu   skip NEO drivers without prompting"
+        echo "  doctor     post-install verification (no root required)"
+        exit 0
+        ;;
+    *)
+        print_error "Unknown option: $1 (use --help)"
+        exit 1
+        ;;
+    esac
+    shift
+done
+
 # privileges
 if [ "$EUID" -ne 0 ]; then
     echo "ERROR: This script must be run as root. Use:"
@@ -90,17 +112,23 @@ if [ -n "$GPU_LINE" ]; then
 else
     print_warning "No Intel GPU was detected."
     GPU_PRESENT=false
-    read -r -p "Do you want to continue the installation WITHOUT GPU support? [y/n]: " response || {
-        print_error "No interactive input available (stdin closed). Installation cancelled."
-        exit 1
-    }
-    case "$response" in
-    [yY]*) ;;
-    *)
-        print_error "Installation cancelled by the user."
-        exit 0
-        ;;
-    esac
+    if [ "$FORCE_NO_GPU" = true ]; then
+        print_substep "--no-gpu set: skipping NEO driver installation."
+    elif [ "$ASSUME_YES" = true ]; then
+        print_substep "--yes set: continuing WITHOUT GPU support."
+    else
+        read -r -p "Do you want to continue the installation WITHOUT GPU support? [y/n]: " response || {
+            print_error "No interactive input available (stdin closed). Installation cancelled."
+            exit 1
+        }
+        case "$response" in
+        [yY]*) ;;
+        *)
+            print_error "Installation cancelled by the user."
+            exit 0
+            ;;
+        esac
+    fi
 fi
 
 # ------------------------------------------------------------------------------
