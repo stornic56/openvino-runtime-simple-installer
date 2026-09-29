@@ -7,13 +7,6 @@ set -euo pipefail
 # It supports Debian 13, Ubuntu 22.04/24.04/26.04, and Fedora (latest stable versions).
 # ------------------------------------------------------------------------------
 
-# privileges
-if [ "$EUID" -ne 0 ]; then
-    echo "ERROR: This script must be run as root. Use:"
-    echo "  sudo bash $0"
-    exit 1
-fi
-
 # routes
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CORE_DIR="$SCRIPT_DIR/core"
@@ -21,6 +14,22 @@ MODULES_DIR="$SCRIPT_DIR/modules"
 
 # print
 source "$CORE_DIR/common.sh"
+
+# Subcommands (before the root check: doctor is a post-install user verification)
+case "${1:-}" in
+    doctor)
+        source "$CORE_DIR/doctor.sh"
+        run_doctor_checks
+        exit 0
+        ;;
+esac
+
+# privileges
+if [ "$EUID" -ne 0 ]; then
+    echo "ERROR: This script must be run as root. Use:"
+    echo "  sudo bash $0"
+    exit 1
+fi
 
 print_step "============================================="
 print_step "  OpenVINO 2026 - SimpleInstaller"
