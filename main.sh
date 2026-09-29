@@ -53,6 +53,33 @@ while [ $# -gt 0 ]; do
     shift
 done
 
+# Menu (Pure-bash ANSI, cero dependencias): la entrada por defecto; los flags la bypassan
+MODE="full"
+if [ "$ASSUME_YES" != true ] && [ "$FORCE_NO_GPU" != true ]; then
+    source "$CORE_DIR/menu.sh"
+    sel=0
+    show_menu || sel=$?
+    case "$sel" in
+    0)
+        print_step "Hasta pronto."
+        exit 0
+        ;;
+    1) : ;;
+    2) MODE="neo" ;;
+    3) MODE="openvino" ;;
+    4)
+        source "$CORE_DIR/doctor.sh"
+        run_doctor_checks
+        exit 0
+        ;;
+    5)
+        source "$CORE_DIR/uninstall.sh"
+        run_uninstall
+        exit 0
+        ;;
+    esac
+fi
+
 # privileges
 if [ "$EUID" -ne 0 ]; then
     echo "ERROR: This script must be run as root. Use:"
@@ -141,7 +168,7 @@ fi
 # ------------------------------------------------------------------------------
 # 3. Install NEO (only if there is a GPU)
 # ------------------------------------------------------------------------------
-if [ "$GPU_PRESENT" = true ]; then
+if [ "$MODE" != "openvino" ] && [ "$GPU_PRESENT" = true ]; then
     print_step "3. Installing GPU drivers (Intel Compute Runtime NEO)..."
     case "$OS_ID" in
     debian)
@@ -156,6 +183,11 @@ if [ "$GPU_PRESENT" = true ]; then
     esac
 else
     print_step "3. Skipping NEO driver installation (no Intel GPU)."
+fi
+
+if [ "$MODE" = "neo" ]; then
+    print_step "Instalacion NEO finalizada."
+    exit 0
 fi
 
 # ------------------------------------------------------------------------------
