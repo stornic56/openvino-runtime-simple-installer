@@ -1,22 +1,22 @@
 #!/bin/bash
 # ------------------------------------------------------------------------------
-# Bloque NEO compartido: variables de version, hashes SHA256, descarga con
-# verificacion e instalacion via apt. Sourced por los modulos setup_*.sh.
+# Shared NEO block: version variables, SHA256 hashes, download with
+# verification and install via apt. Sourced by the setup_*.sh modules.
 #
-# El proximo update de versiones cambia SOLO las 4 variables de aqui
-# (+ los valores de NEO_HASHES si cambian los hashes).
-# Requiere: common.sh ya sourceado (usa print_*), CWD = TEMP_DIR al llamar
-# install_neo_packages.
+# The next version update changes ONLY the 4 variables here
+# (+ the NEO_HASHES values if the hashes change).
+# Requires: common.sh already sourced (uses print_*), CWD = TEMP_DIR when
+# calling install_neo_packages.
 # ------------------------------------------------------------------------------
 
-# --- Versiones (pinned; sin auto-deteccion) ---
-IGC_TAG="v2.41.5"                 # tag de release en intel/intel-graphics-compiler
-IGC_BUILD="22716"                 # build del paquete IGC: 2.41.5+22716
-IGC_VERSION="${IGC_TAG#v}"        # derivado: 2.41.5
-NEO_VERSION="26.35.39758.10"      # release en intel/compute-runtime
-GMM_VERSION="22.10.0"             # libigdgmm12 (estable entre releases)
+# --- Versions (pinned; no auto-detection) ---
+IGC_TAG="v2.41.5"                 # release tag in intel/intel-graphics-compiler
+IGC_BUILD="22716"                 # IGC package build: 2.41.5+22716
+IGC_VERSION="${IGC_TAG#v}"        # derived: 2.41.5
+NEO_VERSION="26.35.39758.10"      # release in intel/compute-runtime
+GMM_VERSION="22.10.0"             # libigdgmm12 (stable across releases)
 
-# --- Hashes SHA256 por nombre de paquete (los valores cambian con cada version) ---
+# --- SHA256 hashes by package name (values change with each version) ---
 declare -A NEO_HASHES=(
     ["intel-igc-core-2"]="0a6e64a663ae65a0fa02d6912ae3b6b37cf85b90c21cc423fd9fef70aaf4f628"
     ["intel-igc-opencl-2"]="779e1b9e88098eb25711e9a8f67c2752665bad22f134aa40ed5649f6e1b87058"
@@ -26,7 +26,7 @@ declare -A NEO_HASHES=(
     ["libze-intel-gpu1"]="c19a641b953d55aebbf1d51bec364a84bf629f985e02fbbe6dc70224c0e88470"
 )
 
-# --- Nombre de archivo del paquete segun su familia ---
+# --- Package filename by family ---
 neo_pkg_filename() {
     case "$1" in
         intel-igc-core-2|intel-igc-opencl-2)
@@ -38,7 +38,7 @@ neo_pkg_filename() {
     esac
 }
 
-# --- URL de descarga segun su familia ---
+# --- Download URL by family ---
 neo_pkg_url() {
     case "$1" in
         intel-igc-core-2|intel-igc-opencl-2)
@@ -48,7 +48,7 @@ neo_pkg_url() {
     esac
 }
 
-# --- Descarga con verificacion SHA256 ---
+# --- Download with SHA256 verification ---
 download_and_verify() {
     local url="$1"
     local filename="$2"
@@ -57,12 +57,12 @@ download_and_verify() {
     local actual
     actual=$(sha256sum "$filename" | awk '{print $1}')
     if [ "$actual" != "$expected" ]; then
-        print_error "SHA256 mismatch para $filename"
+        print_error "SHA256 mismatch for $filename"
         exit 1
     fi
 }
 
-# --- Descarga + verificacion + instalacion de los 6 paquetes de produccion ---
+# --- Download + verify + install of the 6 production packages ---
 install_neo_packages() {
     local pkg f
     for pkg in intel-igc-core-2 intel-igc-opencl-2 intel-ocloc libigdgmm12 libze-intel-gpu1 intel-opencl-icd; do
@@ -70,6 +70,6 @@ install_neo_packages() {
         download_and_verify "$(neo_pkg_url "$pkg")" "$f" "${NEO_HASHES[$pkg]}"
     done
 
-    print_substep "Instalando paquetes deb..."
+    print_substep "Installing deb packages..."
     apt-get install -y ./*.deb
 }

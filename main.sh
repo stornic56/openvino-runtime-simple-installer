@@ -61,7 +61,7 @@ if [ "$ASSUME_YES" != true ] && [ "$FORCE_NO_GPU" != true ]; then
     show_menu || sel=$?
     case "$sel" in
     0)
-        print_step "Hasta pronto."
+        print_step "See you soon."
         exit 0
         ;;
     1) : ;;
@@ -186,7 +186,7 @@ else
 fi
 
 if [ "$MODE" = "neo" ]; then
-    print_step "Instalacion NEO finalizada."
+    print_step "NEO installation finished."
     exit 0
 fi
 

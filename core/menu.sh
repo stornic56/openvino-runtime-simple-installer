@@ -1,13 +1,13 @@
 #!/bin/bash
 # ------------------------------------------------------------------------------
-# Menu minimalista pure-bash (cero dependencias externas: ANSI + read -sn1).
-# Navegacion: flechas up/down + Enter, teclas numericas como atajo, q/ESC salir.
-# Devuelve: 0=salir, 1=instalacion completa, 2=solo NEO, 3=solo OpenVINO,
-#           4=doctor, 5=desinstalar
-# Requiere: common.sh ya sourceado (print_*), no necesita root para navegar.
+# Minimalist pure-bash menu (zero external dependencies: ANSI + read -sn1).
+# Navigation: up/down arrows + Enter, number keys as a shortcut, q/ESC exit.
+# Returns: 0=exit, 1=full installation, 2=NEO only, 3=OpenVINO only,
+#          4=doctor, 5=uninstall
+# Requires: common.sh already sourced (print_*), no root needed to navigate.
 # ------------------------------------------------------------------------------
 
-MENU_OPTS=("Instalacion completa" "Solo drivers NEO" "Solo OpenVINO Runtime" "Verificar instalacion (doctor)" "Desinstalar" "Salir")
+MENU_OPTS=("Full installation" "NEO drivers only" "OpenVINO Runtime only" "Verify installation (doctor)" "Uninstall" "Exit")
 
 show_menu() {
     local sel=0
@@ -22,7 +22,7 @@ show_menu() {
         echo ""
         i=0
         for opt in "${MENU_OPTS[@]}"; do
-            pad=$(( 36 - ${#opt} ))
+            pad=$(( 38 - ${#opt} ))
             if [ "$i" -eq "$sel" ]; then
                 printf '│   \033[1;34m▸ %s. %s\033[0m%*s│\n' "$((i+1))" "$opt" "$pad" ""
             else
@@ -32,9 +32,9 @@ show_menu() {
         done
         echo "└──────────────────────────────────────────────┘"
         echo ""
-        echo "  Flechas + Enter · numero + Enter · q/ESC salir"
+        echo "  Arrows + Enter · number + Enter · q/ESC exit"
         if ! read -rsn1 key; then
-            print_error "Sin entrada disponible."
+            print_error "No input available."
             return 0
         fi
         if [ "$key" = $'\x1b' ]; then

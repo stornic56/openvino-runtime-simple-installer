@@ -39,7 +39,7 @@ cd /
 rm -rf "$TEMP_DIR"
 
 # ---- 4. add user ----
-print_substep "Añadiendo usuario a grupos render y video..."
+print_substep "Adding user to render and video groups..."
 if [ -n "${SUDO_USER:-}" ]; then
     usermod -a -G render,video "$SUDO_USER"
 else
