@@ -18,8 +18,15 @@ source "$CORE_DIR/common.sh"
 # Subcommands (before the root check: doctor is a post-install user verification)
 case "${1:-}" in
     doctor)
+        shift
         source "$CORE_DIR/doctor.sh"
         run_doctor_checks
+        exit 0
+        ;;
+    uninstall)
+        shift
+        source "$CORE_DIR/uninstall.sh"
+        run_uninstall "$@"
         exit 0
         ;;
 esac
