@@ -1,0 +1,6 @@
+# Artefactos de instalacion (no versionar)
+*.tgz
+*.sha256
+openvino_toolkit_*/
+temp/
+install.log
