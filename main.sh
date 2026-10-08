@@ -7,21 +7,85 @@ set -euo pipefail
 # It supports Debian 13, Ubuntu 22.04/24.04/26.04, and Fedora (latest stable versions).
 # ------------------------------------------------------------------------------
 
+# routes
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CORE_DIR="$SCRIPT_DIR/core"
+MODULES_DIR="$SCRIPT_DIR/modules"
+
+# print
+source "$CORE_DIR/common.sh"
+
+# Subcommands (before the root check: doctor is a post-install user verification)
+case "${1:-}" in
+    doctor)
+        shift
+        source "$CORE_DIR/doctor.sh"
+        run_doctor_checks
+        exit 0
+        ;;
+    uninstall)
+        shift
+        source "$CORE_DIR/uninstall.sh"
+        run_uninstall "$@"
+        exit 0
+        ;;
+esac
+
+# Option parsing (before the root check: parsing needs no privileges)
+ASSUME_YES=false
+FORCE_NO_GPU=false
+while [ $# -gt 0 ]; do
+    case "$1" in
+    --yes) ASSUME_YES=true ;;
+    --no-gpu) FORCE_NO_GPU=true ;;
+    --help | -h)
+        echo "Usage: sudo bash main.sh [--yes] [--no-gpu] [doctor]"
+        echo "  --yes      non-interactive: assume 'yes' at the GPU-absent prompt"
+        echo "  --no-gpu   skip NEO drivers without prompting"
+        echo "  doctor     post-install verification (no root required)"
+        exit 0
+        ;;
+    *)
+        print_error "Unknown option: $1 (use --help)"
+        exit 1
+        ;;
+    esac
+    shift
+done
+
+# Menu (Pure-bash ANSI, cero dependencias): la entrada por defecto; los flags la bypassan
+MODE="full"
+if [ "$ASSUME_YES" != true ] && [ "$FORCE_NO_GPU" != true ]; then
+    source "$CORE_DIR/menu.sh"
+    sel=0
+    show_menu || sel=$?
+    case "$sel" in
+    0)
+        print_step "See you soon."
+        exit 0
+        ;;
+    1) : ;;
+    2) MODE="neo" ;;
+    3) MODE="openvino" ;;
+    4)
+        source "$CORE_DIR/doctor.sh"
+        run_doctor_checks
+        exit 0
+        ;;
+    5)
+        source "$CORE_DIR/uninstall.sh"
+        run_uninstall
+        exit 0
+        ;;
+    esac
+fi
+
 # privileges
 if [ "$EUID" -ne 0 ]; then
     echo "ERROR: This script must be run as root. Use:"
     echo "  sudo bash $0"
     exit 1
 fi
-
-# routes
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CORE_DIR="$SCRIPT_DIR/core"
-MODULES_DIR="$SCRIPT_DIR/modules"
-DEPS_DIR="$SCRIPT_DIR/deps"
-
-# print
-source "$CORE_DIR/common.sh"
 
 print_step "============================================="
 print_step "  OpenVINO 2026 - SimpleInstaller"
@@ -82,23 +146,29 @@ if [ -n "$GPU_LINE" ]; then
 else
     print_warning "No Intel GPU was detected."
     GPU_PRESENT=false
-    read -r -p "Do you want to continue the installation WITHOUT GPU support? [y/n]: " response || {
-        print_error "No interactive input available (stdin closed). Installation cancelled."
-        exit 1
-    }
-    case "$response" in
-    [yY]*) ;;
-    *)
-        print_error "Installation cancelled by the user."
-        exit 0
-        ;;
-    esac
+    if [ "$FORCE_NO_GPU" = true ]; then
+        print_substep "--no-gpu set: skipping NEO driver installation."
+    elif [ "$ASSUME_YES" = true ]; then
+        print_substep "--yes set: continuing WITHOUT GPU support."
+    else
+        read -r -p "Do you want to continue the installation WITHOUT GPU support? [y/n]: " response || {
+            print_error "No interactive input available (stdin closed). Installation cancelled."
+            exit 1
+        }
+        case "$response" in
+        [yY]*) ;;
+        *)
+            print_error "Installation cancelled by the user."
+            exit 0
+            ;;
+        esac
+    fi
 fi
 
 # ------------------------------------------------------------------------------
 # 3. Install NEO (only if there is a GPU)
 # ------------------------------------------------------------------------------
-if [ "$GPU_PRESENT" = true ]; then
+if [ "$MODE" != "openvino" ] && [ "$GPU_PRESENT" = true ]; then
     print_step "3. Installing GPU drivers (Intel Compute Runtime NEO)..."
     case "$OS_ID" in
     debian)
@@ -113,6 +183,11 @@ if [ "$GPU_PRESENT" = true ]; then
     esac
 else
     print_step "3. Skipping NEO driver installation (no Intel GPU)."
+fi
+
+if [ "$MODE" = "neo" ]; then
+    print_step "NEO installation finished."
+    exit 0
 fi
 
 # ------------------------------------------------------------------------------
@@ -132,10 +207,19 @@ bash "$CORE_DIR/openvino_logic.sh" "$URL" "$FILENAME"
 print_step "5. Integrity verification completed."
 
 # ------------------------------------------------------------------------------
-# 6. Install system dependencies for OpenVINO
 # ------------------------------------------------------------------------------
-print_step "6. Installing system dependencies (Python, cmake, etc.)..."
-bash "$DEPS_DIR/install_openvino_dependencies.sh" -y
+# 6. Extract the tarball and install system dependencies from it (official flow)
+# ------------------------------------------------------------------------------
+print_step "6. Extracting tarball and installing system dependencies..."
+bash "$CORE_DIR/openvino_logic.sh" --extract "$FILENAME"
+
+DEPS_SCRIPT="${FILENAME%.tgz}/install_dependencies/install_openvino_dependencies.sh"
+if [ ! -f "$DEPS_SCRIPT" ]; then
+    print_error "Unexpected tarball layout: install_dependencies/ not found in the extracted folder."
+    exit 1
+fi
+print_substep "Installing system dependencies from the tarball..."
+bash "$DEPS_SCRIPT" -y
 
 # ------------------------------------------------------------------------------
 # 7. Install OpenVINO
