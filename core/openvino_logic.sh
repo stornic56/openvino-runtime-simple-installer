@@ -19,10 +19,17 @@ if [ "$1" = "--extract" ]; then
 
     # Known before tar (enables partial-extraction cleanup on abort)
     DIRNAME="${FILENAME%.tgz}"
+    # Cleanup ONLY on abort: the trap is set before tar and DISARMED on success —
+    # otherwise the EXIT trap deletes the just-extracted folder on 'exit 0' and
+    # the deps step (and the later --install) find nothing.
     trap 'rm -rf "$DIRNAME"' EXIT
 
     print_substep "Unzipping $FILENAME..."
-    tar -xf "$FILENAME"
+    if ! tar -xf "$FILENAME"; then
+        print_error "Extraction of $FILENAME failed."
+        exit 1   # trap fires: partial extraction is cleaned up
+    fi
+    trap - EXIT  # success: keep the extracted folder for the deps and install steps
 
     # fallback if the extracted folder name differs from the tarball name
     if [ ! -d "$DIRNAME" ]; then
@@ -71,7 +78,7 @@ if [ "$1" = "--install" ]; then
         DIRNAME="${TAR_LIST%%$'\n'*}"   # first entry (no pipe, no SIGPIPE)
         DIRNAME="${DIRNAME%%/*}"
     fi
-    print_substep "Moving $DIRNAME a $INSTALL_DIR..."
+    print_substep "Moving $DIRNAME to $INSTALL_DIR..."
     mv "$DIRNAME" "$INSTALL_DIR"
 
     print_substep "Create symbolic link /opt/intel/openvino_2026..."
